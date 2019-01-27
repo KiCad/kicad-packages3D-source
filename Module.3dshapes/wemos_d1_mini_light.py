@@ -1,5 +1,6 @@
-# This is a CadQuery script template
-# Add your script code below
+# Generated with cadQuery and freecad 0.17 
+# Alligned in StepUp with XYZ offsets of (11.42, -9.52, 10.3)
+
 import cadquery as cq
 
 in2mm = 25.4
