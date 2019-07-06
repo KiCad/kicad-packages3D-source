@@ -81,25 +81,28 @@ body_back = body.faces("<Y[-2]").workplane()\
 shield_pins_front = cq.Workplane("XY").workplane(invert=True).pushPoints(dims_shield["centers_front"])\
     .box(dims_shield["thickness"],dims_shield["width"][0],dims_shield["length"] + dims_body["height"]/2\
          , centered = (True, True, False)\
-         , combine = False)\
+         , combine = True)\
+    .edges("|X and <Z").fillet(dims_shield["width"][0]/2 - 0.01)
     
 
 shield_pins_back = cq.Workplane("XY").workplane(invert=True).pushPoints(dims_shield["centers_back"])\
     .box(dims_shield["thickness"],dims_shield["width"][1],dims_shield["length"] + dims_body["height"]/2\
          , centered = (True, True, False)\
-         , combine = False)\
+         , combine = True)\
+    .edges("|X and <Z").fillet(dims_shield["width"][1]/2 - 0.01)
 
-body = body.union(body_back)
+body = body.union(body_back).union(shield_pins_back).union(shield_pins_front)
+#del shield_pins_front
+#del shield_pins_back
 del body_back
 
-
-tounge = body.faces("<Y[-2]")\
+tounge = body.faces(">Y[-3]")\
     .box(dims_tounge["width"],dims_tounge["height"],dims_tounge["depth"]\
          , centered = (True, True, False)\
          , combine = False)\
     .edges("|Z and <Y").chamfer(dims_tounge["tip_chamfer"])
 
-pegs =body.faces("<Z").workplane().pushPoints(dims_pegs["centers"])\
+pegs =body.faces("<Z[-3]").workplane().pushPoints(dims_pegs["centers"])\
     .circle(dims_pegs["diameter"]/2).extrude(dims_pegs["length"],combine = False)\
     .edges("<Z").chamfer(dims_pegs["tip_chamfer"])
 
@@ -109,12 +112,6 @@ pins = body.faces(">Y").workplane().center(0, -dims_body["height"]/2)\
          , centered = (True, False, False)\
          , combine = False)\
 
-body = body.union(shield_pins_front)\
-    .edges("|X and <Z").fillet(dims_shield["width"][0]/2 - 0.01)\
-    .union(shield_pins_back)\
-    .edges("|X and <Z").fillet(dims_shield["width"][1]/2 - 0.01)
-del shield_pins_front
-del shield_pins_back
 
 show_object(body, name="body", options = {"color" : "#c8c8c8"})
 show_object(tounge, name="tounge", options = {"color" : "#676767"})
