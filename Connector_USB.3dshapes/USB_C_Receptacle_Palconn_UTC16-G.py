@@ -92,8 +92,8 @@ shield_pins_back = cq.Workplane("XY").workplane(invert=True).pushPoints(dims_shi
     .edges("|X and <Z").fillet(dims_shield["width"][1]/2 - 0.01)
 
 body = body.union(body_back).union(shield_pins_back).union(shield_pins_front)
-#del shield_pins_front
-#del shield_pins_back
+del shield_pins_front
+del shield_pins_back
 del body_back
 
 tounge = body.faces(">Y[-3]")\
