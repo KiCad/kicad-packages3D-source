@@ -3,7 +3,6 @@
 # No offsets
 
 import cadquery as cq
-from os.path import basename, splitext
 
 dims = {
     "body": {
@@ -85,6 +84,7 @@ body_back = body.faces("<Y[-2]").workplane()\
          combine=False)\
     .edges("|Y").fillet(dims["body"]["radius"])
 
+body = body.union(body_back)
 shield_pins_front = body.faces("<Z")\
     .workplane(offset=- dims["body"]["height"]/2)\
     .pushPoints(dims["shield"]["centers_front"])\
@@ -94,10 +94,12 @@ shield_pins_front = body.faces("<Z")\
         dims["shield"]["length"] + dims["body"]["height"]/2,
         centered=(True, True, False),
         combine=True)\
-    .edges("|X and <Z").fillet(dims["shield"]["width"][0]/2 - 0.01)
-    
 
-shield_pins_back = body.faces("<Z")\
+body = body.union(shield_pins_front)\
+    .edges("|X and <Z").fillet(dims["shield"]["width"][0]/2 - 0.01)
+
+
+shield_pins_back = body.faces("<Z[-2]")\
     .workplane(offset=- dims["body"]["height"]/2)\
     .pushPoints(dims["shield"]["centers_back"])\
     .box(
@@ -106,11 +108,12 @@ shield_pins_back = body.faces("<Z")\
         dims["shield"]["length"] + dims["body"]["height"]/2,
         centered=(True, True, False),
         combine=True)\
+
+body = body.union(shield_pins_back)\
     .edges("|X and <Z").fillet(dims["shield"]["width"][1]/2 - 0.01)
 
-body = body.union(body_back).union(shield_pins_back).union(shield_pins_front)
-del shield_pins_front
 del shield_pins_back
+del shield_pins_front
 del body_back
 
 tounge = body.faces(">Y[-3]")\
@@ -122,29 +125,22 @@ tounge = body.faces(">Y[-3]")\
         combine=False)\
     .edges("|Z and <Y").chamfer(dims["tounge"]["tip_chamfer"])
 
-pegs = body.faces("<Z[-2]").workplane().pushPoints(dims["pegs"]["centers"])\
+pegs = body.faces("<Z[-3]").workplane().pushPoints(dims["pegs"]["centers"])\
     .circle(dims["pegs"]["diameter"]/2)\
     .extrude(dims["pegs"]["length"], combine=False)\
     .edges("<Z").chamfer(dims["pegs"]["tip_chamfer"])
 
-pins = body.faces(">Y").workplane().center(0, -dims["body"]["height"]/2)\
+pins = cq.Workplane("XZ")\
+    .workplane(offset=-dims["body"]["depth"]/2 - dims["body"]["offset"][1] - dims["pins"]["length"])\
     .pushPoints(dims["pins"]["centers"])\
     .box(
         dims["pins"]["width"],
         dims["pins"]["height"],
         dims["pins"]["length"],
         centered=(True, False, False),
-        combine=False)\
+        combine=True)\
 
-combined = body.union(tounge).union(pegs).union(pins)
-
-# If this is being run from the commandline,
-# export a step named the same as the script
-if '__file__' in globals():
-    with open("{}.step".format(splitext(basename(__file__))[0]), "w+") as f:
-        cq.exporters.exportShape(combined, cq.exporters.ExportTypes.STEP, f)
-else:
-    show_object(body, name="body", options = {"color" : "#c8c8c8"})
-    show_object(tounge, name="tounge", options = {"color" : "#676767"})
-    show_object(pegs, name="pegs", options = {"color" : "#676767"})
-    show_object(pins, name="pins", options = {"color" : "#d9bd2d"})
+show_object(body, options={"rgba": (200, 200, 200, 0)})
+show_object(tounge, options={"rgba": (103, 103, 103, 0)})
+show_object(pegs, options={"rgba": (103, 103, 103, 0)})
+show_object(pins, options={"rgba": (217, 189, 45, 0)})
