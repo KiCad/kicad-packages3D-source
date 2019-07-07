@@ -140,7 +140,19 @@ pins = cq.Workplane("XZ")\
         centered=(True, False, False),
         combine=True)\
 
-show_object(body, options={"rgba": (200, 200, 200, 0)})
-show_object(tounge, options={"rgba": (103, 103, 103, 0)})
-show_object(pegs, options={"rgba": (103, 103, 103, 0)})
-show_object(pins, options={"rgba": (217, 189, 45, 0)})
+
+# If this is being run from the commandline,
+# export a step named the same as the script
+if cq.__version__ == "1.2.0":
+    show_object(body, options={"rgba": (200, 200, 200, 0)})
+    show_object(tounge, options={"rgba": (103, 103, 103, 0)})
+    show_object(pegs, options={"rgba": (103, 103, 103, 0)})
+    show_object(pins, options={"rgba": (217, 189, 45, 0)})
+elif '__file__' in globals():
+    with open("{}.step".format(splitext(basename(__file__))[0]), "w+") as f:
+        cq.exporters.exportShape(combined, cq.exporters.ExportTypes.STEP, f)
+else:
+    show_object(body, name="body", options = {"color" : "#c8c8c8"})
+    show_object(tounge, name="tounge", options = {"color" : "#676767"})
+    show_object(pegs, name="pegs", options = {"color" : "#676767"})
+    show_object(pins, name="pins", options = {"color" : "#d9bd2d"})
